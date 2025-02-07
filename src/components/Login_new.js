@@ -4,7 +4,11 @@ import { auth } from "../utils/firebase";
 import {  createUserWithEmailAndPassword,signInWithEmailAndPassword,updateProfile } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
+import { useDispatch } from "react-redux";
+import { addUser,removeUser } from "../utils/userSlice";
+import { myPIC } from "../utils/constants";
 const Login=()=>{
+    const dispatch=useDispatch();
     const navigate=useNavigate();//it is a hook used to navigate to specific route
     const [isSignIn,setIsSignIn]=useState(true);
     const [errormsg,seterrormsg]=useState(null);
@@ -33,8 +37,11 @@ const Login=()=>{
                 const user = userCredential.user;//On succes of Sign in API give user object
                 updateProfile(user, {
                     displayName:name.current.value,
+                    photoURL:myPIC,
                   }).then(() => {
                     // Profile updated!
+                    const {uid,email,displayName,photoURL} = auth.currentUser;
+                    dispatch(addUser({uid:uid,email:email,displayname:displayName,photoURL:photoURL}));//Actually we are updating the profile previously on Authchange(When ever user sign up) but at that time displayname and photourl is not availabel(as they are updating the prifile after the creation of user) they will be availble only after creation of user aSo, after successful creation of user we are updating once again Updating redux store after updating the profile(after creating user) with displyname
                     navigate("/browse");
                   }).catch((error) => {
                     // An error occurred
@@ -58,6 +65,7 @@ const Login=()=>{
           // Signed in 
           const user = userCredential.user;// On Success login It will give user object
             //console.log(user)
+          
         navigate("/browse");//if the user succesffully Signins ,redirect him to browse page
 
         })
